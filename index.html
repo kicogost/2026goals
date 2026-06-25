@@ -398,7 +398,6 @@ class Component extends DCLogic {
       q.then(function (r) { if (r.error) console.error('[goals] sync failed', r.error); });
     }
     if (willDo) {
-      this.buzz(35);
       this.screenConfetti(95);
       this.showBanner('Well done! 🎉', '#E0A227');
       this.checkMilestones(id, after);
@@ -416,22 +415,12 @@ class Component extends DCLogic {
     var allDone = this.goals.filter(function (g) { return after[g.id]; }).length;
     if (allDone === this.goals.length) {
       this.screenConfetti(180);
-      this.buzz([0, 45, 45, 45, 45, 70]);
       this.showBanner('Every goal for 2026 — done! 🎉', '#E0A227');
     } else if (catDone === catGoals.length) {
-      this.buzz([0, 28, 38, 28]);
       var cat = null;
       for (var j = 0; j < this.cats.length; j++) { if (this.cats[j].id === goal.cat) { cat = this.cats[j]; break; } }
       if (cat) this.showBanner(cat.name + ' — all done! ⭐', cat.color);
     }
-  }
-
-  buzz(pattern) {
-    try {
-      if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-        navigator.vibrate(pattern);
-      }
-    } catch (e) {}
   }
 
   showBanner(text, color) {
