@@ -397,16 +397,17 @@ class Component extends DCLogic {
         : self.sb.from('goal_state').delete().eq('goal_id', id);
       q.then(function (r) { if (r.error) console.error('[goals] sync failed', r.error); });
     }
-    if (willDo) this.buzz(12);
-    if (willDo && e && typeof e.clientX === 'number') {
-      this.celebrate(e.clientX, e.clientY);
-      this.checkMilestones(id, after, e.clientX, e.clientY);
+    if (willDo) {
+      this.buzz(35);
+      this.screenConfetti(95);
+      this.showBanner('Well done! 🎉', '#E0A227');
+      this.checkMilestones(id, after);
     }
   }
 
   // Bigger confetti when a whole category hits 100%, a full-screen shower when
   // the entire year is complete.
-  checkMilestones(id, after, x, y) {
+  checkMilestones(id, after) {
     var goal = null;
     for (var i = 0; i < this.goals.length; i++) { if (this.goals[i].id === id) { goal = this.goals[i]; break; } }
     if (!goal) return;
@@ -414,11 +415,10 @@ class Component extends DCLogic {
     var catDone = catGoals.filter(function (g) { return after[g.id]; }).length;
     var allDone = this.goals.filter(function (g) { return after[g.id]; }).length;
     if (allDone === this.goals.length) {
-      this.grandFinale();
+      this.screenConfetti(180);
       this.buzz([0, 45, 45, 45, 45, 70]);
       this.showBanner('Every goal for 2026 — done! 🎉', '#E0A227');
     } else if (catDone === catGoals.length) {
-      this.celebrate(x, y, { count: 64, spread: 1.55 });
       this.buzz([0, 28, 38, 28]);
       var cat = null;
       for (var j = 0; j < this.cats.length; j++) { if (this.cats[j].id === goal.cat) { cat = this.cats[j]; break; } }
@@ -427,7 +427,11 @@ class Component extends DCLogic {
   }
 
   buzz(pattern) {
-    try { if (navigator && navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+        navigator.vibrate(pattern);
+      }
+    } catch (e) {}
   }
 
   showBanner(text, color) {
@@ -435,25 +439,6 @@ class Component extends DCLogic {
     this.setState({ banner: text, bannerColor: color });
     if (this._bannerT) clearTimeout(this._bannerT);
     this._bannerT = setTimeout(function () { self.setState({ banner: null }); }, 3400);
-  }
-
-  grandFinale() {
-    if (this.props.celebrate === false) return;
-    var colors = ['#E0A227', '#2E5EAA', '#7B3F9D', '#2F8559', '#A23142', '#D45D7A', '#1F7A8C'];
-    var W = window.innerWidth || 800;
-    var H = window.innerHeight || 600;
-    for (var i = 0; i < 130; i++) {
-      var p = document.createElement('div');
-      var left = Math.random() * W;
-      var sz = 7 + Math.random() * 9;
-      var delay = Math.random() * 700;
-      p.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;top:-24px;left:' + left + 'px;width:' + sz + 'px;height:' + sz + 'px;background:' + colors[i % colors.length] + ';border-radius:' + (Math.random() < 0.5 ? '50%' : '2px') + ';';
-      p.style.setProperty('--dx', ((Math.random() - 0.5) * 240) + 'px');
-      p.style.setProperty('--dy', (H + 120) + 'px');
-      p.style.animation = 'confetti-pop ' + (1500 + Math.random() * 900) + 'ms cubic-bezier(.2,.6,.3,1) ' + delay + 'ms forwards';
-      document.body.appendChild(p);
-      (function (el) { setTimeout(function () { el.remove(); }, 3200); })(p);
-    }
   }
 
   // Track goals we just toggled ourselves, so the live echo from Supabase
@@ -475,23 +460,24 @@ class Component extends DCLogic {
     }, 40);
   }
 
-  celebrate(x, y, opts) {
+  // Full-screen confetti shower (rains down from the top across the whole width).
+  screenConfetti(count) {
     if (this.props.celebrate === false) return;
-    opts = opts || {};
-    var count = opts.count || 26;
-    var spread = opts.spread || 1;
     var colors = ['#E0A227', '#2E5EAA', '#7B3F9D', '#2F8559', '#A23142', '#D45D7A', '#1F7A8C'];
+    var W = window.innerWidth || 800;
+    var H = window.innerHeight || 600;
+    count = count || 100;
     for (var i = 0; i < count; i++) {
       var p = document.createElement('div');
-      var ang = Math.random() * Math.PI * 2;
-      var dist = (80 + Math.random() * 150) * spread;
-      var sz = 6 + Math.random() * 7;
-      p.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;left:' + x + 'px;top:' + y + 'px;width:' + sz + 'px;height:' + sz + 'px;background:' + colors[i % colors.length] + ';border-radius:' + (Math.random() < 0.5 ? '50%' : '2px') + ';';
-      p.style.setProperty('--dx', (Math.cos(ang) * dist) + 'px');
-      p.style.setProperty('--dy', (Math.sin(ang) * dist + 130 + Math.random() * 70) + 'px');
-      p.style.animation = 'confetti-pop ' + (700 + Math.random() * 500) + 'ms cubic-bezier(.2,.7,.3,1) forwards';
+      var left = Math.random() * W;
+      var sz = 7 + Math.random() * 9;
+      var delay = Math.random() * 550;
+      p.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;top:-24px;left:' + left + 'px;width:' + sz + 'px;height:' + sz + 'px;background:' + colors[i % colors.length] + ';border-radius:' + (Math.random() < 0.5 ? '50%' : '2px') + ';';
+      p.style.setProperty('--dx', ((Math.random() - 0.5) * 260) + 'px');
+      p.style.setProperty('--dy', (H + 140) + 'px');
+      p.style.animation = 'confetti-pop ' + (1500 + Math.random() * 900) + 'ms cubic-bezier(.2,.6,.3,1) ' + delay + 'ms forwards';
       document.body.appendChild(p);
-      (function (el) { setTimeout(function () { el.remove(); }, 1300); })(p);
+      (function (el) { setTimeout(function () { el.remove(); }, 3300); })(p);
     }
   }
 
