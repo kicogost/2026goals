@@ -47,6 +47,10 @@
     0%   { opacity: 0; transform: translateX(-50%) translateY(-16px); }
     100% { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
+  .cards-row { scrollbar-width: thin; scrollbar-color: #D9CCAD transparent; }
+  .cards-row::-webkit-scrollbar { height: 8px; }
+  .cards-row::-webkit-scrollbar-thumb { background: #D9CCAD; border-radius: 99px; }
+  .cards-row::-webkit-scrollbar-track { background: transparent; }
 </style>
 </helmet>
 <div style="min-height:100vh; background:radial-gradient(1300px 700px at 50% -12%, #FCF4E3, #F0E4CA); font-family:'Nunito',sans-serif; color:#2A2620; padding:clamp(16px,3vw,42px);">
@@ -106,7 +110,7 @@
       </sc-for>
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 430px),1fr)); gap:clamp(16px,2.2vw,26px);">
+    <div class="cards-row" style="display:flex; gap:clamp(16px,2.2vw,26px); overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:4px 2px 16px; scroll-padding-left:2px;">
       <sc-for list="{{ cats }}" as="cat" hint-placeholder-count="4">
         <section style="{{ cat.sectionStyle }}" style-hover="transform:translateY(-3px); box-shadow:0 16px 38px rgba(70,50,20,.16);">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px;">
@@ -187,8 +191,8 @@ class Component extends DCLogic {
   goals = [
     // Business & Career
     { id: 'biz-f-1', cat: 'business', who: 'f', label: "Land the 'Head of GTM' role at RallyUP", note: '$150K annual salary' },
-    { id: 'biz-f-2', cat: 'business', who: 'f', label: 'Grow the agency to $10K monthly revenue', note: 'Acquire 5 new clients at $2K each' },
-    { id: 'biz-f-3', cat: 'business', who: 'f', label: 'Reach 10K followers on X', note: 'By posting daily' },
+    { id: 'biz-f-2', cat: 'business', who: 'f', label: 'Build a side project doing $10K monthly' },
+    { id: 'biz-f-3', cat: 'business', who: 'f', label: 'Reach 10K followers on LinkedIn', note: 'By posting daily' },
     { id: 'biz-m-1', cat: 'business', who: 'm', label: 'Grow my personal brand on social media', note: '10K followers or more' },
     { id: 'biz-m-2', cat: 'business', who: 'm', label: 'Launch my own clothing brand', note: 'Take risks without fearing success' },
     { id: 'biz-m-3', cat: 'business', who: 'm', label: 'Find a job that fills me with excitement', note: "While the brand isn't profitable yet" },
@@ -543,7 +547,7 @@ class Component extends DCLogic {
         maria: maria,
         frac: d + '/' + all.length,
         tagLabel: pct === 100 ? cat.name + '  ⭐' : cat.name,
-        sectionStyle: 'background:#FCF8EF; border-radius:18px; padding:clamp(18px,2.2vw,28px); box-shadow:0 8px 26px rgba(70,50,20,.09); border:1px solid rgba(120,90,40,.08); transition:transform .18s ease, box-shadow .18s ease; animation:card-in .55s cubic-bezier(.2,.7,.3,1) ' + (idx * 80) + 'ms backwards;',
+        sectionStyle: 'flex:0 0 min(460px, 86vw); scroll-snap-align:start; align-self:flex-start; background:#FCF8EF; border-radius:18px; padding:clamp(18px,2.2vw,28px); box-shadow:0 8px 26px rgba(70,50,20,.09); border:1px solid rgba(120,90,40,.08); transition:transform .18s ease, box-shadow .18s ease; animation:card-in .55s cubic-bezier(.2,.7,.3,1) ' + (idx * 80) + 'ms backwards;',
         tagStyle: { fontFamily: "'Caveat',cursive", fontSize: 'clamp(25px,2.7vw,33px)', fontWeight: 700, color: cat.color, padding: '1px 16px 4px', border: '2px dashed ' + cat.color, borderRadius: '13px', background: cat.tint, display: 'inline-block', lineHeight: 1.05 },
         barStyle: { width: pct + '%', height: '100%', background: cat.color, borderRadius: '99px', transition: 'width .45s ease' },
       });
