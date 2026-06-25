@@ -51,6 +51,12 @@
   .cards-row::-webkit-scrollbar { height: 8px; }
   .cards-row::-webkit-scrollbar-thumb { background: #D9CCAD; border-radius: 99px; }
   .cards-row::-webkit-scrollbar-track { background: transparent; }
+  @keyframes nudge-left  { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
+  @keyframes nudge-right { 0%,100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+  .swipe-arrow { display: inline-block; }
+  .swipe-l { animation: nudge-left 2.4s ease-in-out infinite; }
+  .swipe-r { animation: nudge-right 2.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .swipe-l, .swipe-r { animation: none; } }
 </style>
 </helmet>
 <div style="min-height:100vh; background:radial-gradient(1300px 700px at 50% -12%, #FCF4E3, #F0E4CA); font-family:'Nunito',sans-serif; color:#2A2620; padding:clamp(16px,3vw,42px);">
@@ -162,6 +168,12 @@
           </div>
         </section>
       </sc-for>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:center; gap:9px; margin-top:-8px; color:#BCAF95; font-weight:800; font-size:11.5px; letter-spacing:1.5px; text-transform:uppercase; user-select:none;">
+      <span class="swipe-arrow swipe-l" style="font-size:16px;">&#8249;</span>
+      swipe
+      <span class="swipe-arrow swipe-r" style="font-size:16px;">&#8250;</span>
     </div>
 
     <footer style="display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:wrap; padding-top:4px; color:#A89C82; font-size:12.5px; font-weight:600;">
