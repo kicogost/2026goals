@@ -1,0 +1,14 @@
+{
+  "name": "2026 Goals · Francisco & Maria",
+  "short_name": "2026 Goals",
+  "description": "Francisco & Maria's 2026 goals tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0E4CA",
+  "theme_color": "#E0A227",
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" },
+    { "src": "/apple-touch-icon.png", "type": "image/png", "sizes": "180x180" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

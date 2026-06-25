@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2026 Goals · Francisco & Maria</title>
+<meta name="description" content="Francisco & Maria's 2026 goals tracker">
+<meta name="theme-color" content="#E0A227">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="2026 Goals">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  @keyframes confetti-pop {
+    0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(560deg) scale(.3); opacity: 0; }
+  }
+  @keyframes pop-in {
+    0%   { transform: scale(.4); }
+    60%  { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  @keyframes card-in {
+    0%   { opacity: 0; transform: translateY(14px); }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes partner-glow {
+    0%   { background: #FFF1D2; box-shadow: 0 0 0 2px #E0A227 inset; }
+    70%  { background: #FFF8E8; }
+    100% { background: transparent; box-shadow: 0 0 0 0 rgba(224,162,39,0) inset; }
+  }
+</style>
+</helmet>
+<div style="min-height:100vh; background:radial-gradient(1300px 700px at 50% -12%, #FCF4E3, #F0E4CA); font-family:'Nunito',sans-serif; color:#2A2620; padding:clamp(16px,3vw,42px);">
+
+  <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:80vh; display:grid; place-items:center;">
+      <div style="background:#FCF8EF; border-radius:20px; padding:clamp(28px,5vw,40px) clamp(24px,5vw,36px); box-shadow:0 14px 40px rgba(70,50,20,.14); border:1px solid rgba(120,90,40,.10); max-width:380px; width:100%; text-align:center;">
+        <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:600; color:#A23142;">Francisco &#10084; Maria</div>
+        <div style="font-family:'Caveat',cursive; font-size:66px; line-height:.9; font-weight:700; color:#E0A227; margin:2px 0;">2026</div>
+        <div style="font-size:15px; font-weight:800; letter-spacing:.4px; margin-bottom:24px;">GOALS TRACKER</div>
+        <input type="password" value="{{ pw }}" onInput="{{ onPwInput }}" onKeyDown="{{ onPwKey }}" placeholder="Shared password" style="width:100%; font-family:'Nunito',sans-serif; font-size:16px; font-weight:600; padding:13px 15px; border-radius:12px; border:2px solid #D9CCAD; background:#FFFDF8; color:#2A2620; outline:none; margin-bottom:12px;">
+        <button onClick="{{ doLogin }}" style="width:100%; font-family:'Nunito',sans-serif; font-size:15px; font-weight:800; padding:13px; border-radius:12px; border:none; cursor:pointer; background:#2A2620; color:#FBF6EA; transition:opacity .15s;" style-hover="opacity:.88;">Open our goals &#10084;</button>
+        <sc-if value="{{ loginError }}" hint-placeholder-val="">
+          <div style="color:#A23142; font-size:13px; font-weight:700; margin-top:14px;">{{ loginError }}</div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ authed }}" hint-placeholder-val="{{ true }}">
+  <div style="max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:clamp(20px,2.6vw,30px);">
+
+    <header style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px;">
+      <div>
+        <div style="font-family:'Caveat',cursive; font-size:clamp(24px,3.2vw,34px); font-weight:600; color:#A23142;">Francisco &#10084; Maria</div>
+        <div style="display:flex; align-items:flex-end; gap:16px;">
+          <span style="font-family:'Caveat',cursive; font-size:clamp(70px,12vw,138px); line-height:.82; font-weight:700; color:#E0A227; text-shadow:0 2px 0 rgba(176,128,0,.18);">2026</span>
+          <span style="font-size:clamp(15px,2vw,21px); font-weight:800; line-height:1.1; letter-spacing:.3px; padding-bottom:10px;">GOALS<br>TRACKER</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:clamp(14px,2.4vw,26px);">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="{{ s.ringStyle }}">
+              <div style="width:calc(100% - 16px); height:calc(100% - 16px); background:#FCF8EF; border-radius:50%; display:grid; place-items:center;">
+                <span style="{{ s.pctStyle }}">{{ s.pct }}<span style="font-size:.55em;">%</span></span>
+              </div>
+            </div>
+            <div style="text-align:center; line-height:1.1;">
+              <div style="font-size:13px; font-weight:800; color:#5C5648;">{{ s.label }}</div>
+              <div style="font-size:11.5px; font-weight:700; color:#A89C82;">{{ s.frac }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </header>
+
+    <div style="display:flex; gap:8px; background:#FCF8EF; padding:6px; border-radius:14px; box-shadow:0 4px 16px rgba(80,60,20,.07); width:fit-content; border:1px solid rgba(120,90,40,.08);">
+      <sc-for list="{{ viewBtns }}" as="b" hint-placeholder-count="3">
+        <button onClick="{{ b.onClick }}" style="{{ b.style }}">{{ b.label }}</button>
+      </sc-for>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 430px),1fr)); gap:clamp(16px,2.2vw,26px);">
+      <sc-for list="{{ cats }}" as="cat" hint-placeholder-count="4">
+        <section style="{{ cat.sectionStyle }}" style-hover="transform:translateY(-3px); box-shadow:0 16px 38px rgba(70,50,20,.16);">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px;">
+            <span style="{{ cat.tagStyle }}">{{ cat.tagLabel }}</span>
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:120px; max-width:230px;">
+              <div style="flex:1; height:8px; background:#EBE0C8; border-radius:99px; overflow:hidden;">
+                <div style="{{ cat.barStyle }}"></div>
+              </div>
+              <span style="font-size:13px; font-weight:800; color:#A89C82; white-space:nowrap;">{{ cat.frac }}</span>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 215px),1fr)); gap:clamp(14px,2vw,24px);">
+            <sc-if value="{{ showFran }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="font-family:'Caveat',cursive; font-size:25px; font-weight:700; color:#1F7A8C; border-bottom:2px dotted #1F7A8C; display:inline-block; padding-bottom:1px; margin-bottom:8px;">Francisco</div>
+                <div style="display:flex; flex-direction:column;">
+                  <sc-for list="{{ cat.fran }}" as="g" hint-placeholder-count="3">
+                    <div onClick="{{ g.toggle }}" data-goal-id="{{ g.id }}" style="{{ rowStyle }}" style-hover="background:#F4EBD7;">
+                      <span style="{{ g.boxStyle }}">{{ g.check }}</span>
+                      <div style="flex:1;">
+                        <div style="{{ g.labelStyle }}">{{ g.label }}</div>
+                        <sc-if value="{{ g.note }}" hint-placeholder-val="">
+                          <div style="{{ noteStyle }}">{{ g.note }}</div>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ showMaria }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="font-family:'Caveat',cursive; font-size:25px; font-weight:700; color:#D45D7A; border-bottom:2px dotted #D45D7A; display:inline-block; padding-bottom:1px; margin-bottom:8px;">Maria</div>
+                <div style="display:flex; flex-direction:column;">
+                  <sc-for list="{{ cat.maria }}" as="g" hint-placeholder-count="3">
+                    <div onClick="{{ g.toggle }}" data-goal-id="{{ g.id }}" style="{{ rowStyle }}" style-hover="background:#F4EBD7;">
+                      <span style="{{ g.boxStyle }}">{{ g.check }}</span>
+                      <div style="flex:1;">
+                        <div style="{{ g.labelStyle }}">{{ g.label }}</div>
+                        <sc-if value="{{ g.note }}" hint-placeholder-val="">
+                          <div style="{{ noteStyle }}">{{ g.note }}</div>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </section>
+      </sc-for>
+    </div>
+
+    <footer style="display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:wrap; padding-top:4px; color:#A89C82; font-size:12.5px; font-weight:600;">
+      <span>{{ syncLabel }}</span>
+      <button onClick="{{ resetAll }}" style="font-family:'Nunito',sans-serif; font-size:12.5px; font-weight:700; color:#A23142; background:transparent; border:1px solid rgba(162,49,66,.3); border-radius:8px; padding:4px 12px; cursor:pointer;" style-hover="background:rgba(162,49,66,.08);">Reset all</button>
+      <button onClick="{{ logout }}" style="font-family:'Nunito',sans-serif; font-size:12.5px; font-weight:700; color:#8A8070; background:transparent; border:1px solid rgba(120,90,40,.25); border-radius:8px; padding:4px 12px; cursor:pointer;" style-hover="background:rgba(120,90,40,.06);">Log out</button>
+    </footer>
+
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1180, &quot;height&quot;: 880 },
+  &quot;defaultView&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;both&quot;, &quot;francisco&quot;, &quot;maria&quot;], &quot;default&quot;: &quot;both&quot;, &quot;tsType&quot;: &quot;'both'|'francisco'|'maria'&quot; },
+  &quot;celebrate&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot; },
+  &quot;density&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;cozy&quot;, &quot;compact&quot;], &quot;default&quot;: &quot;cozy&quot;, &quot;tsType&quot;: &quot;'cozy'|'compact'&quot; }
+}">
+class Component extends DCLogic {
+  cats = [
+    { id: 'business',    name: 'Business & Career', color: '#2E5EAA', tint: '#E9F0FB' },
+    { id: 'personal',    name: 'Personal',          color: '#7B3F9D', tint: '#F3ECFA' },
+    { id: 'health',      name: 'Health & Fitness',  color: '#2F8559', tint: '#E9F5EE' },
+    { id: 'fulfillment', name: 'Fulfillment',       color: '#A23142', tint: '#FBEAEC' },
+  ];
+
+  goals = [
+    // Business & Career
+    { id: 'biz-f-1', cat: 'business', who: 'f', label: "Land the 'Head of GTM' role at RallyUP", note: '$150K annual salary' },
+    { id: 'biz-f-2', cat: 'business', who: 'f', label: 'Grow the agency to $10K monthly revenue', note: 'Acquire 5 new clients at $2K each' },
+    { id: 'biz-f-3', cat: 'business', who: 'f', label: 'Reach 10K followers on X', note: 'By posting daily' },
+    { id: 'biz-m-1', cat: 'business', who: 'm', label: 'Grow my personal brand on social media', note: '10K followers or more' },
+    { id: 'biz-m-2', cat: 'business', who: 'm', label: 'Launch my own clothing brand', note: 'Take risks without fearing success' },
+    { id: 'biz-m-3', cat: 'business', who: 'm', label: 'Find a job that fills me with excitement', note: "While the brand isn't profitable yet" },
+    { id: 'biz-m-4', cat: 'business', who: 'm', label: 'Stop jumping from task to task' },
+    { id: 'biz-m-5', cat: 'business', who: 'm', label: 'Make €4K a month', note: 'Think big, but little by little' },
+    // Personal
+    { id: 'per-f-1', cat: 'personal', who: 'f', label: 'Plan 1 major trip with family', note: 'Real quality time' },
+    { id: 'per-f-2', cat: 'personal', who: 'f', label: 'Weekly date-night with Maria + 3 new countries together' },
+    { id: 'per-f-3', cat: 'personal', who: 'f', label: 'Call Mum, Lali & Dad at least once a week each', note: 'Proper quality time' },
+    { id: 'per-f-4', cat: 'personal', who: 'f', label: 'See my UK friends at least once this year' },
+    { id: 'per-f-5', cat: 'personal', who: 'f', label: 'Be kinder to the people I love' },
+    { id: 'per-m-1', cat: 'personal', who: 'm', label: 'Become the best version of myself' },
+    { id: 'per-m-2', cat: 'personal', who: 'm', label: 'Keep a routine — even on holidays' },
+    { id: 'per-m-3', cat: 'personal', who: 'm', label: 'Cook more' },
+    { id: 'per-m-4', cat: 'personal', who: 'm', label: 'Get a puppy' },
+    { id: 'per-m-5', cat: 'personal', who: 'm', label: 'Make money for the business' },
+    { id: 'per-m-6', cat: 'personal', who: 'm', label: 'Save money for our future home' },
+    { id: 'per-m-7', cat: 'personal', who: 'm', label: 'Make our little home feel more ours' },
+    { id: 'per-m-8', cat: 'personal', who: 'm', label: 'Take more initiative' },
+    { id: 'per-m-9', cat: 'personal', who: 'm', label: 'Stay in closer touch with friends & family', note: "Reach out first — don't wait for them to message me" },
+    { id: 'per-m-10', cat: 'personal', who: 'm', label: 'Be less proud' },
+    // Health & Fitness
+    { id: 'hea-f-1', cat: 'health', who: 'f', label: 'Daily morning yoga (15+ min)', note: 'For pain-free sport' },
+    { id: 'hea-f-2', cat: 'health', who: 'f', label: 'Keep a 6-pack all year round' },
+    { id: 'hea-f-3', cat: 'health', who: 'f', label: 'Run at least 3 times a week' },
+    { id: 'hea-f-4', cat: 'health', who: 'f', label: 'Strength: 3 pull-up + push-up sessions a week' },
+    { id: 'hea-m-1', cat: 'health', who: 'm', label: 'Heal my foot' },
+    { id: 'hea-m-2', cat: 'health', who: 'm', label: 'Moisturize every single day' },
+    { id: 'hea-m-3', cat: 'health', who: 'm', label: 'Use more sunscreen' },
+    { id: 'hea-m-4', cat: 'health', who: 'm', label: 'Eat more fish & vegetables' },
+    { id: 'hea-m-5', cat: 'health', who: 'm', label: 'Exercise at least 4× a week', note: 'Yoga at home or studio · a 10K if possible' },
+    // Fulfillment
+    { id: 'ful-f-1', cat: 'fulfillment', who: 'f', label: 'Earn my BJJ blue belt' },
+    { id: 'ful-f-2', cat: 'fulfillment', who: 'f', label: 'Run the Madrid Half-Marathon in 1:45', note: '4:59 / km pace' },
+    { id: 'ful-f-3', cat: 'fulfillment', who: 'f', label: 'Run a sub-20 5K', note: '3:59 / km pace' },
+    { id: 'ful-f-4', cat: 'fulfillment', who: 'f', label: 'Visit at least 3 new countries' },
+    { id: 'ful-f-5', cat: 'fulfillment', who: 'f', label: 'Help younger versions of me when they reach out' },
+    { id: 'ful-m-1', cat: 'fulfillment', who: 'm', label: 'Visit 1 new continent' },
+    { id: 'ful-m-2', cat: 'fulfillment', who: 'm', label: 'Take Kico to Terceira' },
+    { id: 'ful-m-3', cat: 'fulfillment', who: 'm', label: 'Speak a little Italian' },
+    { id: 'ful-m-4', cat: 'fulfillment', who: 'm', label: 'Paint 1 large textured canvas' },
+    { id: 'ful-m-5', cat: 'fulfillment', who: 'm', label: "Learn to sew — this year's big goal", note: 'Create the jacket prototypes · design the Christmas tablecloth' },
+  ];
+
+  // ===================================================================
+  //  Supabase config — replace these three placeholders during setup.
+  //  (Until they're filled in, the app runs in local-only mode using
+  //   this device's storage, with no login screen.)
+  // ===================================================================
+  SUPABASE_URL = 'https://luttlkigxuqkjalywilt.supabase.co';
+  SUPABASE_ANON_KEY = 'sb_publishable_Irq7HoF4TEhL-muuAIi3kQ_MQj3UMAi';
+  SHARED_EMAIL = 'fgostscagliarini@gmail.com';
+
+  KEY = 'couple-goals-2026-v1';
+
+  state = {
+    view: this.props.defaultView || 'both',
+    done: {},
+    authed: false,
+    loading: true,
+    pw: '',
+    error: null,
+  };
+
+  configured() {
+    return /^https:\/\//.test(this.SUPABASE_URL) && this.SUPABASE_ANON_KEY.indexOf('__') !== 0;
+  }
+
+  // ---------------------------- lifecycle ----------------------------
+  componentDidMount() {
+    if (!this.configured()) {
+      // No backend yet — fall back to this-device storage so the page still works.
+      this.setState({ done: this.loadLocal(), authed: true, loading: false });
+      return;
+    }
+    var self = this;
+    this.waitForSupabase(function () {
+      try {
+        self.sb = window.supabase.createClient(self.SUPABASE_URL, self.SUPABASE_ANON_KEY, {
+          auth: { persistSession: true, autoRefreshToken: true },
+        });
+      } catch (e) {
+        self.setState({ loading: false, error: 'Could not reach the backend' });
+        return;
+      }
+      self.sb.auth.getSession().then(function (res) {
+        var session = res && res.data ? res.data.session : null;
+        if (session) self.afterLogin();
+        else self.setState({ loading: false, authed: false });
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.channel && this.sb) { try { this.sb.removeChannel(this.channel); } catch (e) {} }
+  }
+
+  componentDidUpdate(prev) {
+    if (prev.defaultView !== this.props.defaultView && this.props.defaultView) {
+      this.setState({ view: this.props.defaultView });
+    }
+  }
+
+  waitForSupabase(cb) {
+    if (window.supabase && window.supabase.createClient) return cb();
+    setTimeout(this.waitForSupabase.bind(this, cb), 50);
+  }
+
+  // ------------------------------ auth -------------------------------
+  login() {
+    var self = this;
+    var pw = (this.state.pw || '').trim();
+    if (!pw) { this.setState({ error: 'Enter the password' }); return; }
+    this.setState({ error: null, loading: true });
+    this.sb.auth.signInWithPassword({ email: this.SHARED_EMAIL, password: pw }).then(function (res) {
+      if (res.error) { self.setState({ loading: false, error: 'Wrong password — try again' }); return; }
+      self.afterLogin();
+    });
+  }
+
+  logout() {
+    var self = this;
+    if (this.sb) this.sb.auth.signOut().then(function () {
+      self.setState({ authed: false, done: {}, pw: '', loading: false });
+    });
+  }
+
+  afterLogin() {
+    var self = this;
+    this.sb.from('goal_state').select('goal_id').then(function (res) {
+      var done = {};
+      if (res.data) res.data.forEach(function (r) { done[r.goal_id] = true; });
+      self.setState({ done: done, authed: true, loading: false, pw: '', error: null });
+      self.subscribe();
+    });
+  }
+
+  subscribe() {
+    if (this.channel) return;
+    var self = this;
+    this.channel = this.sb.channel('goal_state_rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'goal_state' }, function (payload) {
+        var gid = (payload.new && payload.new.goal_id) || (payload.old && payload.old.goal_id);
+        self.setState(function (s) {
+          var done = Object.assign({}, s.done);
+          if (payload.eventType === 'DELETE') {
+            if (payload.old && payload.old.goal_id) delete done[payload.old.goal_id];
+          } else if (payload.new && payload.new.goal_id) {
+            done[payload.new.goal_id] = true;
+          }
+          return { done: done };
+        });
+        // Glow the row when the *other* device ticks something (skip our own echo).
+        var isLocal = self.localEcho && self.localEcho[gid] && (Date.now() - self.localEcho[gid] < 4000);
+        if (gid && !isLocal && payload.eventType !== 'DELETE') self.glowRow(gid);
+      })
+      .subscribe();
+  }
+
+  // ------------------------ local-only fallback ----------------------
+  loadLocal() {
+    try {
+      var raw = localStorage.getItem(this.KEY);
+      var parsed = raw ? JSON.parse(raw) : null;
+      return (parsed && parsed.done) ? parsed.done : {};
+    } catch (e) { return {}; }
+  }
+  persistLocal(done) {
+    try { localStorage.setItem(this.KEY, JSON.stringify({ version: 1, done: done, updatedAt: Date.now() })); } catch (e) {}
+  }
+
+  // ----------------------------- toggling ----------------------------
+  toggleGoal(id, e) {
+    var willDo = !this.state.done[id];
+    var self = this;
+    var after = Object.assign({}, this.state.done);
+    if (after[id]) { delete after[id]; } else { after[id] = true; }
+
+    this.setState(function (s) {
+      var done = Object.assign({}, s.done);
+      if (done[id]) { delete done[id]; } else { done[id] = true; }
+      if (!self.configured()) self.persistLocal(done);
+      return { done: done };
+    });
+    if (self.configured() && self.sb) {
+      self.markLocalEcho(id);
+      var q = willDo
+        ? self.sb.from('goal_state').upsert({ goal_id: id })
+        : self.sb.from('goal_state').delete().eq('goal_id', id);
+      q.then(function (r) { if (r.error) console.error('[goals] sync failed', r.error); });
+    }
+    if (willDo && e && typeof e.clientX === 'number') {
+      this.celebrate(e.clientX, e.clientY);
+      this.checkMilestones(id, after, e.clientX, e.clientY);
+    }
+  }
+
+  // Bigger confetti when a whole category hits 100%, a full-screen shower when
+  // the entire year is complete.
+  checkMilestones(id, after, x, y) {
+    var goal = null;
+    for (var i = 0; i < this.goals.length; i++) { if (this.goals[i].id === id) { goal = this.goals[i]; break; } }
+    if (!goal) return;
+    var catGoals = this.goals.filter(function (g) { return g.cat === goal.cat; });
+    var catDone = catGoals.filter(function (g) { return after[g.id]; }).length;
+    var allDone = this.goals.filter(function (g) { return after[g.id]; }).length;
+    if (allDone === this.goals.length) { this.grandFinale(); }
+    else if (catDone === catGoals.length) { this.celebrate(x, y, { count: 64, spread: 1.55 }); }
+  }
+
+  grandFinale() {
+    if (this.props.celebrate === false) return;
+    var colors = ['#E0A227', '#2E5EAA', '#7B3F9D', '#2F8559', '#A23142', '#D45D7A', '#1F7A8C'];
+    var W = window.innerWidth || 800;
+    var H = window.innerHeight || 600;
+    for (var i = 0; i < 130; i++) {
+      var p = document.createElement('div');
+      var left = Math.random() * W;
+      var sz = 7 + Math.random() * 9;
+      var delay = Math.random() * 700;
+      p.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;top:-24px;left:' + left + 'px;width:' + sz + 'px;height:' + sz + 'px;background:' + colors[i % colors.length] + ';border-radius:' + (Math.random() < 0.5 ? '50%' : '2px') + ';';
+      p.style.setProperty('--dx', ((Math.random() - 0.5) * 240) + 'px');
+      p.style.setProperty('--dy', (H + 120) + 'px');
+      p.style.animation = 'confetti-pop ' + (1500 + Math.random() * 900) + 'ms cubic-bezier(.2,.6,.3,1) ' + delay + 'ms forwards';
+      document.body.appendChild(p);
+      (function (el) { setTimeout(function () { el.remove(); }, 3200); })(p);
+    }
+  }
+
+  // Track goals we just toggled ourselves, so the live echo from Supabase
+  // doesn't make our own action glow.
+  markLocalEcho(id) {
+    if (!this.localEcho) this.localEcho = {};
+    this.localEcho[id] = Date.now();
+  }
+
+  glowRow(id) {
+    setTimeout(function () {
+      var els = document.querySelectorAll('[data-goal-id="' + id + '"]');
+      for (var i = 0; i < els.length; i++) {
+        (function (el) {
+          el.style.animation = 'partner-glow 1.8s ease';
+          setTimeout(function () { el.style.animation = ''; }, 1850);
+        })(els[i]);
+      }
+    }, 40);
+  }
+
+  celebrate(x, y, opts) {
+    if (this.props.celebrate === false) return;
+    opts = opts || {};
+    var count = opts.count || 26;
+    var spread = opts.spread || 1;
+    var colors = ['#E0A227', '#2E5EAA', '#7B3F9D', '#2F8559', '#A23142', '#D45D7A', '#1F7A8C'];
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('div');
+      var ang = Math.random() * Math.PI * 2;
+      var dist = (80 + Math.random() * 150) * spread;
+      var sz = 6 + Math.random() * 7;
+      p.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;left:' + x + 'px;top:' + y + 'px;width:' + sz + 'px;height:' + sz + 'px;background:' + colors[i % colors.length] + ';border-radius:' + (Math.random() < 0.5 ? '50%' : '2px') + ';';
+      p.style.setProperty('--dx', (Math.cos(ang) * dist) + 'px');
+      p.style.setProperty('--dy', (Math.sin(ang) * dist + 130 + Math.random() * 70) + 'px');
+      p.style.animation = 'confetti-pop ' + (700 + Math.random() * 500) + 'ms cubic-bezier(.2,.7,.3,1) forwards';
+      document.body.appendChild(p);
+      (function (el) { setTimeout(function () { el.remove(); }, 1300); })(p);
+    }
+  }
+
+  resetAll() {
+    if (typeof confirm === 'function' && !confirm('Clear all checkmarks for both of you?')) return;
+    if (this.configured() && this.sb) {
+      this.sb.from('goal_state').delete().neq('goal_id', '').then(function (r) { if (r.error) console.error(r.error); });
+    } else {
+      this.persistLocal({});
+    }
+    this.setState({ done: {} });
+  }
+
+  renderVals() {
+    var self = this;
+
+    // -------- login gate (only when a backend is configured) --------
+    if (!this.state.authed) {
+      return {
+        authed: false,
+        loading: !!this.state.loading,
+        showLogin: !this.state.loading,
+        pw: this.state.pw || '',
+        loginError: this.state.error || '',
+        onPwInput: function (e) { self.setState({ pw: e.target.value, error: null }); },
+        onPwKey: function (e) { if (e.key === 'Enter') self.login(); },
+        doLogin: function () { self.login(); },
+      };
+    }
+
+    // ----------------------------- the app -------------------------
+    var doneMap = this.state.done;
+    var view = this.state.view;
+    var compact = (this.props.density || 'cozy') === 'compact';
+    var labelSize = compact ? '14px' : '15.5px';
+
+    var rowStyle = { display: 'flex', gap: '11px', alignItems: 'flex-start', padding: compact ? '5px 8px' : '9px 10px', borderRadius: '11px', cursor: 'pointer', transition: 'background .15s', userSelect: 'none' };
+    var noteStyle = { fontSize: compact ? '12px' : '12.5px', color: '#9A8F7B', marginTop: '2px', lineHeight: 1.35, fontWeight: 600 };
+
+    function boxStyle(done) {
+      return { width: '22px', height: '22px', flex: '0 0 22px', borderRadius: '7px', display: 'grid', placeItems: 'center', marginTop: '2px', fontSize: '14px', fontWeight: 800, transition: 'all .18s', color: '#fff', border: done ? '2px solid #E0A227' : '2px solid #C9BC9E', background: done ? '#E0A227' : 'transparent', animation: done ? 'pop-in .25s ease' : 'none' };
+    }
+    function labelStyle(done) {
+      return { fontSize: labelSize, fontWeight: 600, lineHeight: 1.35, textDecoration: done ? 'line-through' : 'none', color: done ? '#B6AC97' : '#2A2620' };
+    }
+    function decorate(g) {
+      var done = !!doneMap[g.id];
+      return Object.assign({}, g, {
+        done: done,
+        check: done ? '✓' : '',
+        boxStyle: boxStyle(done),
+        labelStyle: labelStyle(done),
+        toggle: function (e) { self.toggleGoal(g.id, e); },
+      });
+    }
+
+    var cats = this.cats.map(function (cat, idx) {
+      var fran = self.goals.filter(function (g) { return g.cat === cat.id && g.who === 'f'; }).map(decorate);
+      var maria = self.goals.filter(function (g) { return g.cat === cat.id && g.who === 'm'; }).map(decorate);
+      var all = fran.concat(maria);
+      var d = all.filter(function (g) { return g.done; }).length;
+      var pct = all.length ? Math.round(d / all.length * 100) : 0;
+      return Object.assign({}, cat, {
+        fran: fran,
+        maria: maria,
+        frac: d + '/' + all.length,
+        tagLabel: pct === 100 ? cat.name + '  ⭐' : cat.name,
+        sectionStyle: 'background:#FCF8EF; border-radius:18px; padding:clamp(18px,2.2vw,28px); box-shadow:0 8px 26px rgba(70,50,20,.09); border:1px solid rgba(120,90,40,.08); transition:transform .18s ease, box-shadow .18s ease; animation:card-in .55s cubic-bezier(.2,.7,.3,1) ' + (idx * 80) + 'ms backwards;',
+        tagStyle: { fontFamily: "'Caveat',cursive", fontSize: 'clamp(25px,2.7vw,33px)', fontWeight: 700, color: cat.color, padding: '1px 16px 4px', border: '2px dashed ' + cat.color, borderRadius: '13px', background: cat.tint, display: 'inline-block', lineHeight: 1.05 },
+        barStyle: { width: pct + '%', height: '100%', background: cat.color, borderRadius: '99px', transition: 'width .45s ease' },
+      });
+    });
+
+    function mkStat(label, d, t, color) {
+      var pct = t ? Math.round(d / t * 100) : 0;
+      return {
+        label: label, frac: d + ' / ' + t, pct: pct, color: color,
+        ringStyle: { width: 'clamp(78px,9vw,96px)', height: 'clamp(78px,9vw,96px)', borderRadius: '50%', background: 'conic-gradient(' + color + ' ' + (pct * 3.6) + 'deg, #EBE0C8 0deg)', display: 'grid', placeItems: 'center', transition: 'background .5s ease' },
+        pctStyle: { fontFamily: "'Caveat',cursive", fontSize: 'clamp(24px,2.7vw,32px)', fontWeight: 700, color: color, lineHeight: 1 },
+      };
+    }
+    var totDone = this.goals.filter(function (g) { return doneMap[g.id]; }).length;
+    var fAll = this.goals.filter(function (g) { return g.who === 'f'; });
+    var mAll = this.goals.filter(function (g) { return g.who === 'm'; });
+    var fDone = fAll.filter(function (g) { return doneMap[g.id]; }).length;
+    var mDone = mAll.filter(function (g) { return doneMap[g.id]; }).length;
+    var stats = [
+      mkStat('Together', totDone, this.goals.length, '#E0A227'),
+      mkStat('Francisco', fDone, fAll.length, '#1F7A8C'),
+      mkStat('Maria', mDone, mAll.length, '#D45D7A'),
+    ];
+
+    function btnStyle(active) {
+      return { fontFamily: "'Nunito',sans-serif", fontSize: '14px', fontWeight: 700, padding: '8px 18px', borderRadius: '10px', border: 'none', cursor: 'pointer', transition: 'all .15s', background: active ? '#2A2620' : 'transparent', color: active ? '#FBF6EA' : '#8A8070' };
+    }
+    var viewBtns = [['both', 'Both'], ['francisco', 'Francisco'], ['maria', 'Maria']].map(function (v) {
+      return { key: v[0], label: v[1], style: btnStyle(view === v[0]), onClick: function () { self.setState({ view: v[0] }); } };
+    });
+
+    return {
+      authed: true,
+      showLogin: false,
+      loading: false,
+      cats: cats,
+      stats: stats,
+      viewBtns: viewBtns,
+      rowStyle: rowStyle,
+      noteStyle: noteStyle,
+      showFran: view === 'both' || view === 'francisco',
+      showMaria: view === 'both' || view === 'maria',
+      syncLabel: this.configured() ? 'Synced across your devices · changes appear live' : 'Saving on this device · add Supabase keys to sync',
+      resetAll: function () { self.resetAll(); },
+      logout: function () { self.logout(); },
+    };
+  }
+}
+</script>
+</body>
+</html>
